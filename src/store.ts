@@ -7,6 +7,10 @@ export function getAll(): Todo[] {
   return todos;
 }
 
+export function getById(id: number): Todo | null {
+  return todos.find((t) => t.id === id) ?? null;
+}
+
 export function add(title: string): Todo {
   const todo: Todo = { id: nextId++, title, completed: false };
   todos.push(todo);
@@ -17,6 +21,13 @@ export function toggle(id: number): Todo | null {
   const todo = todos.find((t) => t.id === id);
   if (!todo) return null;
   todo.completed = !todo.completed;
+  return todo;
+}
+
+export function updateTitle(id: number, title: string): Todo | null {
+  const todo = todos.find((t) => t.id === id);
+  if (!todo) return null;
+  todo.title = title;
   return todo;
 }
 
