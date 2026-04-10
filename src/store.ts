@@ -1,0 +1,21 @@
+import { Todo } from "./types.js";
+
+let nextId = 1;
+const todos: Todo[] = [];
+
+export function getAll(): Todo[] {
+  return todos;
+}
+
+export function add(title: string): Todo {
+  const todo: Todo = { id: nextId++, title, completed: false };
+  todos.push(todo);
+  return todo;
+}
+
+export function remove(id: number): boolean {
+  const idx = todos.findIndex((t) => t.id === id);
+  if (idx === -1) return false;
+  todos.splice(idx, 1);
+  return true;
+}

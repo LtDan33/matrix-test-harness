@@ -1,0 +1,19 @@
+{
+  "name": "matrix-test-harness",
+  "version": "1.0.0",
+  "description": "Trivial Express+TypeScript TODO app for end-to-end Matrix integration testing",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "typescript": "^5.8.3",
+    "tsx": "^4.19.4"
+  }
+}
