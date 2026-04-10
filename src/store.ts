@@ -13,6 +13,13 @@ export function add(title: string): Todo {
   return todo;
 }
 
+export function toggle(id: number): Todo | null {
+  const todo = todos.find((t) => t.id === id);
+  if (!todo) return null;
+  todo.completed = !todo.completed;
+  return todo;
+}
+
 export function remove(id: number): boolean {
   const idx = todos.findIndex((t) => t.id === id);
   if (idx === -1) return false;
