@@ -1,8 +1,10 @@
 import express from "express";
+import cors from "cors";
 import { getAll, getById, add, toggle, updateTitle, remove } from "./store.js";
 import { Stats } from "./types.js";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -79,6 +81,15 @@ app.get("/", (_req, res) => {
     setInterval(refresh, 5000);
   </script>
 </body></html>`);
+});
+
+app.get("/api/echo", (req, res) => {
+  const msg = req.query.msg;
+  if (typeof msg !== "string") {
+    res.status(400).json({ error: "msg query parameter is required" });
+    return;
+  }
+  res.json({ echo: msg });
 });
 
 app.get("/api/health", (_req, res) => {
