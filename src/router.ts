@@ -85,6 +85,8 @@ export class TodoRouter {
     this.router.get("/api/todos/:id", this.getOne);
     this.router.post("/api/todos/bulk", this.createBulk);
     this.router.post("/api/todos", this.create);
+    this.router.patch("/api/todos/:id/complete", this.complete);
+    this.router.patch("/api/todos/:id/incomplete", this.incomplete);
     this.router.patch("/api/todos/:id", this.toggle);
     this.router.put("/api/todos/:id", this.update);
     this.router.delete("/api/todos", this.clearCompleted);
@@ -112,8 +114,13 @@ export class TodoRouter {
     res.json(this.service.stats());
   };
 
-  private list = (_req: Request, res: Response): void => {
-    res.json(this.service.getAll());
+  private list = (req: Request, res: Response): void => {
+    const search = req.query.search;
+    if (typeof search === "string" && search.length > 0) {
+      res.json(this.service.search(search));
+    } else {
+      res.json(this.service.getAll());
+    }
   };
 
   private listCompleted = (_req: Request, res: Response): void => {
@@ -172,6 +179,34 @@ export class TodoRouter {
     }
     const todo = this.service.add(title.trim());
     res.status(201).json(todo);
+  };
+
+  private complete = (req: Request, res: Response): void => {
+    const id = this.parseId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ error: "invalid id" });
+      return;
+    }
+    const todo = this.service.setCompleted(id, true);
+    if (!todo) {
+      res.status(404).json({ error: "not found" });
+      return;
+    }
+    res.json(todo);
+  };
+
+  private incomplete = (req: Request, res: Response): void => {
+    const id = this.parseId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ error: "invalid id" });
+      return;
+    }
+    const todo = this.service.setCompleted(id, false);
+    if (!todo) {
+      res.status(404).json({ error: "not found" });
+      return;
+    }
+    res.json(todo);
   };
 
   private toggle = (req: Request, res: Response): void => {

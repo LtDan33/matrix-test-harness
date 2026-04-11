@@ -16,6 +16,11 @@ export class TodoService {
     return this.todos.filter((t) => !t.completed);
   }
 
+  search(query: string): Todo[] {
+    const lower = query.toLowerCase();
+    return this.todos.filter((t) => t.title.toLowerCase().includes(lower));
+  }
+
   getById(id: number): Todo | null {
     return this.todos.find((t) => t.id === id) ?? null;
   }
@@ -34,6 +39,13 @@ export class TodoService {
     const todo = this.todos.find((t) => t.id === id);
     if (!todo) return null;
     todo.completed = !todo.completed;
+    return todo;
+  }
+
+  setCompleted(id: number, completed: boolean): Todo | null {
+    const todo = this.todos.find((t) => t.id === id);
+    if (!todo) return null;
+    todo.completed = completed;
     return todo;
   }
 
