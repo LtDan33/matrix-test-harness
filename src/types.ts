@@ -9,4 +9,5 @@ export interface Todo {
 export interface Stats {
   totalTodos: number;
   completedTodos: number;
+  pendingTodos: number;
 }

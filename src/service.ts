@@ -26,6 +26,10 @@ export class TodoService {
     return todo;
   }
 
+  addBulk(titles: string[]): Todo[] {
+    return titles.map((title) => this.add(title));
+  }
+
   toggle(id: number): Todo | null {
     const todo = this.todos.find((t) => t.id === id);
     if (!todo) return null;
@@ -57,6 +61,7 @@ export class TodoService {
     return {
       totalTodos: this.todos.length,
       completedTodos: this.getCompleted().length,
+      pendingTodos: this.getPending().length,
     };
   }
 }

@@ -83,6 +83,7 @@ export class TodoRouter {
     this.router.get("/api/todos/completed", this.listCompleted);
     this.router.get("/api/todos/pending", this.listPending);
     this.router.get("/api/todos/:id", this.getOne);
+    this.router.post("/api/todos/bulk", this.createBulk);
     this.router.post("/api/todos", this.create);
     this.router.patch("/api/todos/:id", this.toggle);
     this.router.put("/api/todos/:id", this.update);
@@ -143,6 +144,22 @@ export class TodoRouter {
     res.json(todo);
   };
 
+  private createBulk = (req: Request, res: Response): void => {
+    const { titles } = req.body as { titles?: unknown };
+    if (!Array.isArray(titles) || titles.length === 0) {
+      res.status(400).json({ error: "titles must be a non-empty array" });
+      return;
+    }
+    const invalid = titles.find((t) => typeof t !== "string" || (t as string).trim().length === 0);
+    if (invalid !== undefined) {
+      res.status(400).json({ error: "each title must be a non-empty string" });
+      return;
+    }
+    const trimmed = (titles as string[]).map((t) => t.trim()).filter((t) => t.length <= 200);
+    const todos = this.service.addBulk(trimmed);
+    res.status(201).json(todos);
+  };
+
   private create = (req: Request, res: Response): void => {
     const { title } = req.body as { title?: unknown };
     if (typeof title !== "string" || title.trim().length === 0) {
@@ -178,11 +195,11 @@ export class TodoRouter {
       return;
     }
     const { title } = req.body as { title?: string };
-    if (!title || typeof title !== "string") {
-      res.status(400).json({ error: "title is required" });
+    if (typeof title !== "string" || title.trim().length === 0) {
+      res.status(400).json({ error: "title is required and must be a non-empty string" });
       return;
     }
-    const todo = this.service.updateTitle(id, title);
+    const todo = this.service.updateTitle(id, title.trim());
     if (!todo) {
       res.status(404).json({ error: "not found" });
       return;
