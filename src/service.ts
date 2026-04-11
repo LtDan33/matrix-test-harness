@@ -8,6 +8,10 @@ export class TodoService {
     return this.todos;
   }
 
+  getCompleted(): Todo[] {
+    return this.todos.filter((t) => t.completed);
+  }
+
   getById(id: number): Todo | null {
     return this.todos.find((t) => t.id === id) ?? null;
   }

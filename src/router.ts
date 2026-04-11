@@ -80,6 +80,7 @@ export class TodoRouter {
     this.router.get("/api/health", this.health);
     this.router.get("/api/stats", this.stats);
     this.router.get("/api/todos", this.list);
+    this.router.get("/api/todos/completed", this.listCompleted);
     this.router.get("/api/todos/:id", this.getOne);
     this.router.post("/api/todos", this.create);
     this.router.patch("/api/todos/:id", this.toggle);
@@ -110,6 +111,10 @@ export class TodoRouter {
 
   private list = (_req: Request, res: Response): void => {
     res.json(this.service.getAll());
+  };
+
+  private listCompleted = (_req: Request, res: Response): void => {
+    res.json(this.service.getCompleted());
   };
 
   private parseId(raw: unknown): number | null {
