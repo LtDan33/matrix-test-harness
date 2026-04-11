@@ -56,7 +56,7 @@ export class TodoService {
   stats(): Stats {
     return {
       totalTodos: this.todos.length,
-      completedTodos: this.todos.filter((t) => t.completed).length,
+      completedTodos: this.getCompleted().length,
     };
   }
 }

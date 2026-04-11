@@ -8,14 +8,17 @@ Trivial Express + TypeScript TODO API. This app exists solely as an integration 
 npm run dev       # Start dev server with watch (tsx)
 npm run build     # Compile TypeScript
 npm start         # Run without watch
+npm test          # Run test suite (vitest)
 npx tsc --noEmit  # Build gate (must pass with zero errors)
 ```
 
 ## Architecture
 
-- `src/index.ts` — Express server on port 4444
-- `src/types.ts` — TypeScript interfaces
-- `src/store.ts` — In-memory todo array (no database)
+- `src/index.ts` — Express server on port 4444; wires up CORS, JSON middleware, and TodoRouter
+- `src/types.ts` — TypeScript interfaces (`Todo`, `Stats`)
+- `src/service.ts` — In-memory todo logic (`TodoService` class; no database)
+- `src/router.ts` — Express route definitions (`TodoRouter` class); serves UI at `/` and API at `/api/*`
+- `src/__tests__/store.test.ts` — Vitest unit tests for service logic
 
 ## Rules
 
