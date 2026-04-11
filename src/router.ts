@@ -82,12 +82,13 @@ export class TodoRouter {
     this.router.get("/api/todos", this.list);
     this.router.get("/api/todos/completed", this.listCompleted);
     this.router.get("/api/todos/pending", this.listPending);
+    this.router.get("/api/todos/stats", this.stats);
     this.router.get("/api/todos/:id", this.getOne);
     this.router.post("/api/todos/bulk", this.createBulk);
     this.router.post("/api/todos", this.create);
     this.router.patch("/api/todos/:id/complete", this.complete);
     this.router.patch("/api/todos/:id/incomplete", this.incomplete);
-    this.router.patch("/api/todos/:id", this.toggle);
+    this.router.patch("/api/todos/:id", this.patch);
     this.router.put("/api/todos/:id", this.update);
     this.router.delete("/api/todos", this.clearCompleted);
     this.router.delete("/api/todos/:id", this.remove);
@@ -209,13 +210,37 @@ export class TodoRouter {
     res.json(todo);
   };
 
-  private toggle = (req: Request, res: Response): void => {
+  private patch = (req: Request, res: Response): void => {
     const id = this.parseId(req.params.id);
     if (id === null) {
       res.status(400).json({ error: "invalid id" });
       return;
     }
-    const todo = this.service.toggle(id);
+    const { title, completed } = req.body as { title?: unknown; completed?: unknown };
+    if (title === undefined && completed === undefined) {
+      res.status(400).json({ error: "at least one of title or completed is required" });
+      return;
+    }
+    const updates: { title?: string; completed?: boolean } = {};
+    if (title !== undefined) {
+      if (typeof title !== "string" || title.trim().length === 0) {
+        res.status(400).json({ error: "title must be a non-empty string" });
+        return;
+      }
+      if (title.trim().length > 200) {
+        res.status(400).json({ error: "title must be under 200 characters" });
+        return;
+      }
+      updates.title = title.trim();
+    }
+    if (completed !== undefined) {
+      if (typeof completed !== "boolean") {
+        res.status(400).json({ error: "completed must be a boolean" });
+        return;
+      }
+      updates.completed = completed;
+    }
+    const todo = this.service.patch(id, updates);
     if (!todo) {
       res.status(404).json({ error: "not found" });
       return;

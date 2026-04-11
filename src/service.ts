@@ -56,6 +56,14 @@ export class TodoService {
     return todo;
   }
 
+  patch(id: number, updates: { title?: string; completed?: boolean }): Todo | null {
+    const todo = this.todos.find((t) => t.id === id);
+    if (!todo) return null;
+    if (updates.title !== undefined) todo.title = updates.title;
+    if (updates.completed !== undefined) todo.completed = updates.completed;
+    return todo;
+  }
+
   clearCompleted(): number {
     const before = this.todos.length;
     this.todos = this.todos.filter((t) => !t.completed);
