@@ -1,5 +1,8 @@
 import { Router, Request, Response } from "express";
 import { TodoService } from "./service.js";
+import { Priority } from "./types.js";
+
+const VALID_PRIORITIES = new Set<Priority>(["high", "medium", "low"]);
 
 const INDEX_HTML = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Matrix Test Harness</title>
@@ -116,12 +119,25 @@ export class TodoRouter {
   };
 
   private list = (req: Request, res: Response): void => {
-    const search = req.query.search;
-    if (typeof search === "string" && search.length > 0) {
-      res.json(this.service.search(search));
-    } else {
-      res.json(this.service.getAll());
+    const { search, completed } = req.query;
+
+    let todos = this.service.getAll();
+
+    if (completed === "true") {
+      todos = todos.filter((t) => t.completed);
+    } else if (completed === "false") {
+      todos = todos.filter((t) => !t.completed);
+    } else if (completed !== undefined) {
+      res.status(400).json({ error: "completed must be 'true' or 'false'" });
+      return;
     }
+
+    if (typeof search === "string" && search.length > 0) {
+      const lower = search.toLowerCase();
+      todos = todos.filter((t) => t.title.toLowerCase().includes(lower));
+    }
+
+    res.json(todos);
   };
 
   private listCompleted = (_req: Request, res: Response): void => {
@@ -169,7 +185,7 @@ export class TodoRouter {
   };
 
   private create = (req: Request, res: Response): void => {
-    const { title } = req.body as { title?: unknown };
+    const { title, priority, dueDate } = req.body as { title?: unknown; priority?: unknown; dueDate?: unknown };
     if (typeof title !== "string" || title.trim().length === 0) {
       res.status(400).json({ error: "title is required and must be a non-empty string" });
       return;
@@ -178,7 +194,21 @@ export class TodoRouter {
       res.status(400).json({ error: "title must be under 200 characters" });
       return;
     }
-    const todo = this.service.add(title.trim());
+    let resolvedPriority: Priority = "medium";
+    if (priority !== undefined) {
+      if (typeof priority !== "string" || !VALID_PRIORITIES.has(priority as Priority)) {
+        res.status(400).json({ error: "priority must be 'high', 'medium', or 'low'" });
+        return;
+      }
+      resolvedPriority = priority as Priority;
+    }
+    if (dueDate !== undefined) {
+      if (typeof dueDate !== "string" || isNaN(Date.parse(dueDate))) {
+        res.status(400).json({ error: "dueDate must be an ISO 8601 date string" });
+        return;
+      }
+    }
+    const todo = this.service.add(title.trim(), resolvedPriority, typeof dueDate === "string" ? dueDate : undefined);
     res.status(201).json(todo);
   };
 
@@ -216,12 +246,12 @@ export class TodoRouter {
       res.status(400).json({ error: "invalid id" });
       return;
     }
-    const { title, completed } = req.body as { title?: unknown; completed?: unknown };
-    if (title === undefined && completed === undefined) {
-      res.status(400).json({ error: "at least one of title or completed is required" });
+    const { title, completed, priority, dueDate } = req.body as { title?: unknown; completed?: unknown; priority?: unknown; dueDate?: unknown };
+    if (title === undefined && completed === undefined && priority === undefined && dueDate === undefined) {
+      res.status(400).json({ error: "at least one of title, completed, priority, or dueDate is required" });
       return;
     }
-    const updates: { title?: string; completed?: boolean } = {};
+    const updates: { title?: string; completed?: boolean; priority?: Priority; dueDate?: string | null } = {};
     if (title !== undefined) {
       if (typeof title !== "string" || title.trim().length === 0) {
         res.status(400).json({ error: "title must be a non-empty string" });
@@ -239,6 +269,20 @@ export class TodoRouter {
         return;
       }
       updates.completed = completed;
+    }
+    if (priority !== undefined) {
+      if (typeof priority !== "string" || !VALID_PRIORITIES.has(priority as Priority)) {
+        res.status(400).json({ error: "priority must be 'high', 'medium', or 'low'" });
+        return;
+      }
+      updates.priority = priority as Priority;
+    }
+    if (dueDate !== undefined) {
+      if (dueDate !== null && (typeof dueDate !== "string" || isNaN(Date.parse(dueDate)))) {
+        res.status(400).json({ error: "dueDate must be an ISO 8601 date string or null" });
+        return;
+      }
+      updates.dueDate = dueDate as string | null;
     }
     const todo = this.service.patch(id, updates);
     if (!todo) {

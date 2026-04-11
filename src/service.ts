@@ -1,4 +1,4 @@
-import { Todo, Stats } from "./types.js";
+import { Todo, Stats, Priority } from "./types.js";
 
 export class TodoService {
   private todos: Todo[] = [];
@@ -25,8 +25,9 @@ export class TodoService {
     return this.todos.find((t) => t.id === id) ?? null;
   }
 
-  add(title: string): Todo {
-    const todo: Todo = { id: this.nextId++, title, completed: false, createdAt: new Date().toISOString() };
+  add(title: string, priority: Priority = "medium", dueDate?: string): Todo {
+    const todo: Todo = { id: this.nextId++, title, completed: false, priority, createdAt: new Date().toISOString() };
+    if (dueDate !== undefined) todo.dueDate = dueDate;
     this.todos.push(todo);
     return todo;
   }
@@ -56,11 +57,19 @@ export class TodoService {
     return todo;
   }
 
-  patch(id: number, updates: { title?: string; completed?: boolean }): Todo | null {
+  patch(id: number, updates: { title?: string; completed?: boolean; priority?: Priority; dueDate?: string | null }): Todo | null {
     const todo = this.todos.find((t) => t.id === id);
     if (!todo) return null;
     if (updates.title !== undefined) todo.title = updates.title;
     if (updates.completed !== undefined) todo.completed = updates.completed;
+    if (updates.priority !== undefined) todo.priority = updates.priority;
+    if (updates.dueDate !== undefined) {
+      if (updates.dueDate === null) {
+        delete todo.dueDate;
+      } else {
+        todo.dueDate = updates.dueDate;
+      }
+    }
     return todo;
   }
 
