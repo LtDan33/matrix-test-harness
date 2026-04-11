@@ -12,12 +12,16 @@ export class TodoService {
     return this.todos.filter((t) => t.completed);
   }
 
+  getPending(): Todo[] {
+    return this.todos.filter((t) => !t.completed);
+  }
+
   getById(id: number): Todo | null {
     return this.todos.find((t) => t.id === id) ?? null;
   }
 
   add(title: string): Todo {
-    const todo: Todo = { id: this.nextId++, title, completed: false };
+    const todo: Todo = { id: this.nextId++, title, completed: false, createdAt: new Date().toISOString() };
     this.todos.push(todo);
     return todo;
   }
@@ -34,6 +38,12 @@ export class TodoService {
     if (!todo) return null;
     todo.title = title;
     return todo;
+  }
+
+  clearCompleted(): number {
+    const before = this.todos.length;
+    this.todos = this.todos.filter((t) => !t.completed);
+    return before - this.todos.length;
   }
 
   remove(id: number): boolean {

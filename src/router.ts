@@ -81,10 +81,12 @@ export class TodoRouter {
     this.router.get("/api/stats", this.stats);
     this.router.get("/api/todos", this.list);
     this.router.get("/api/todos/completed", this.listCompleted);
+    this.router.get("/api/todos/pending", this.listPending);
     this.router.get("/api/todos/:id", this.getOne);
     this.router.post("/api/todos", this.create);
     this.router.patch("/api/todos/:id", this.toggle);
     this.router.put("/api/todos/:id", this.update);
+    this.router.delete("/api/todos", this.clearCompleted);
     this.router.delete("/api/todos/:id", this.remove);
   }
 
@@ -115,6 +117,10 @@ export class TodoRouter {
 
   private listCompleted = (_req: Request, res: Response): void => {
     res.json(this.service.getCompleted());
+  };
+
+  private listPending = (_req: Request, res: Response): void => {
+    res.json(this.service.getPending());
   };
 
   private parseId(raw: unknown): number | null {
@@ -182,6 +188,11 @@ export class TodoRouter {
       return;
     }
     res.json(todo);
+  };
+
+  private clearCompleted = (_req: Request, res: Response): void => {
+    const count = this.service.clearCompleted();
+    res.json({ cleared: count });
   };
 
   private remove = (req: Request, res: Response): void => {
