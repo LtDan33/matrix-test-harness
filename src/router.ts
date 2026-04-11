@@ -85,6 +85,7 @@ export class TodoRouter {
     this.router.get("/api/todos", this.list);
     this.router.get("/api/todos/completed", this.listCompleted);
     this.router.get("/api/todos/pending", this.listPending);
+    this.router.get("/api/todos/search", this.searchTodos);
     this.router.get("/api/todos/stats", this.stats);
     this.router.get("/api/todos/:id", this.getOne);
     this.router.post("/api/todos/bulk", this.createBulk);
@@ -93,6 +94,7 @@ export class TodoRouter {
     this.router.patch("/api/todos/:id/incomplete", this.incomplete);
     this.router.patch("/api/todos/:id", this.patch);
     this.router.put("/api/todos/:id", this.update);
+    this.router.delete("/api/todos/completed", this.clearCompleted);
     this.router.delete("/api/todos", this.clearCompleted);
     this.router.delete("/api/todos/:id", this.remove);
   }
@@ -146,6 +148,15 @@ export class TodoRouter {
 
   private listPending = (_req: Request, res: Response): void => {
     res.json(this.service.getPending());
+  };
+
+  private searchTodos = (req: Request, res: Response): void => {
+    const { q } = req.query;
+    if (typeof q !== "string" || q.length === 0) {
+      res.status(400).json({ error: "q query parameter is required" });
+      return;
+    }
+    res.json(this.service.search(q));
   };
 
   private parseId(raw: unknown): number | null {
