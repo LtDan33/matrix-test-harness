@@ -1,6 +1,6 @@
-# Matrix Test Harness
+# TaskFlow
 
-Trivial Express + TypeScript TODO API. This app exists solely as an integration test vehicle for The Matrix autonomous dev loop.
+Lightweight, self-hosted task management REST API. Express + TypeScript, zero-config startup.
 
 ## Commands
 
@@ -14,14 +14,30 @@ npx tsc --noEmit  # Build gate (must pass with zero errors)
 
 ## Architecture
 
-- `src/index.ts` — Express server on port 4444; wires up CORS, JSON middleware, and TodoRouter
-- `src/types.ts` — TypeScript interfaces (`Todo`, `Stats`)
-- `src/service.ts` — In-memory todo logic (`TodoService` class; no database)
-- `src/router.ts` — Express route definitions (`TodoRouter` class); serves UI at `/` and API at `/api/*`
-- `src/__tests__/store.test.ts` — Vitest unit tests for service logic
+- `src/index.ts` — Express app on port 4444, mounts middleware and router
+- `src/types.ts` — TypeScript interfaces (Todo, Stats)
+- `src/service.ts` — TodoService class (CRUD logic, in-memory store)
+- `src/router.ts` — TodoRouter class (route handlers, validation, HTTP responses)
+- `src/__tests__/store.test.ts` — Unit tests (vitest)
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /api/health | Health check |
+| GET | /api/todos | List todos (filter: `?completed=true/false`) |
+| GET | /api/todos/:id | Get single todo |
+| GET | /api/todos/completed | List completed |
+| GET | /api/todos/pending | List pending |
+| GET | /api/stats | Counts (total, completed, pending) |
+| POST | /api/todos | Create todo |
+| POST | /api/todos/bulk | Batch create |
+| PATCH | /api/todos/:id | Update todo |
+| DELETE | /api/todos/:id | Delete todo |
+| DELETE | /api/todos/completed | Clear completed |
 
 ## Rules
 
-- Keep the app trivial. No database, no ORM, no complex architecture.
 - `npx tsc --noEmit` must pass with zero errors after every change.
-- Some queue tasks are intentionally designed to fail — this is expected behavior for Matrix testing.
+- No `any` types. No `@ts-ignore`.
+- Keep dependencies minimal — don't add heavy libraries for simple tasks.
